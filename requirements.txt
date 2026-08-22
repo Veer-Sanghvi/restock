@@ -1,0 +1,6 @@
+lightgbm==4.7.0
+scikit-learn==1.9.0
+pandas==3.0.5
+matplotlib==3.11.1
+numpy==2.5.2
+openpyxl==3.1.5

@@ -1,0 +1,28 @@
+{
+  "n_skus": 24,
+  "backtest_weeks": 12,
+  "one_step_ahead": true,
+  "overall": {
+    "naive_last_week": {
+      "rmse": 785.1708081154486,
+      "mae": 437.37847222222223
+    },
+    "moving_average_4wk": {
+      "rmse": 640.8713872397791,
+      "mae": 362.45659722222223
+    },
+    "lightgbm": {
+      "rmse": 747.9703228810619,
+      "mae": 393.21185324053295
+    }
+  },
+  "safety_stock_units_at_95pct": {
+    "naive_last_week": 24226,
+    "moving_average_4wk": 19765,
+    "lightgbm": 22014
+  },
+  "safety_stock_saved_vs_naive": {
+    "moving_average_4wk": 4460,
+    "lightgbm": 2212
+  }
+}
