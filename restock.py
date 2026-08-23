@@ -57,7 +57,7 @@ for wk in test_weeks:
                               subsample=0.8, colsample_bytree=0.8,
                               random_state=RNG, verbose=-1)
     model.fit(train[FEATURES], train["units"],
-              categorical_feature=["sku_id", "woy"])
+              categorical_feature=["sku_id"])
     test["pred_lgbm"] = np.clip(model.predict(test[FEATURES]), 0, None)
     test["pred_naive"] = test["lag1"]
     test["pred_ma4"] = test["ma4"]

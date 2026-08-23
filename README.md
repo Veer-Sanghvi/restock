@@ -12,9 +12,9 @@ One-week-ahead demand forecasts, rolled forward over the last 12 weeks. Each wee
 |---|---|---|
 | Naive (last week's number) | 785 | 437 |
 | **4-week moving average** | **641** | **362** |
-| LightGBM (lags, moving average, seasonality, SKU) | 748 | 393 |
+| LightGBM (lags, moving average, week-of-year, SKU) | 683 | 406 |
 
-The moving average wins. LightGBM got a fair fight, not a token one: a Tweedie objective for skewed counts (890), a log-transformed target (743), smaller trees (871), and an L1 objective (780) were all tried, and every variant still lost to the 4-week average.
+The moving average wins. LightGBM got a fair fight, not a token one: a Tweedie objective for skewed counts (762), a log-transformed target (748), smaller trees (752), and an L1 objective (762) were all tried, and every variant still lost to the 4-week average. An adversarial review pass also caught week-of-year being fed in as a categorical the model could never match on one year of data; fixing it to numeric improved LightGBM from 748 to 683 RMSE, and the baseline still won.
 
 ![Backtest on the best-selling SKU](figures/backtest-top-sku.png)
 
@@ -26,7 +26,7 @@ Forecast error is not an abstract number; it sets the safety stock you must hold
 
 ![Safety stock by method](figures/safety-stock.png)
 
-Switching from naive forecasting to the moving average frees 4,461 units of safety stock across 24 SKUs at the same service level. That is the sentence a plant manager cares about, and it comes from the forecast, not from the warehouse.
+Switching from naive forecasting to the moving average frees 4,460 units of safety stock across 24 SKUs at the same service level. That is the sentence a plant manager cares about, and it comes from the forecast, not from the warehouse.
 
 ## Decisions, and why
 
@@ -35,6 +35,13 @@ Switching from naive forecasting to the moving average frees 4,461 units of safe
 - **Demand means orders.** Cancellations, returns, and non-product codes (postage, bank charges) are removed, and each SKU's series starts at its first sale so pre-launch zeros do not read as demand.
 - **Scored in units of stock.** RMSE decides the ranking; safety stock states the consequence.
 - **The losing model stays in the repo.** Deleting LightGBM after it lost would make this a story instead of an experiment.
+
+## Stated limits
+
+- The safety-stock conversion assumes normally distributed forecast errors (the 1.645 factor). Retail demand errors are right-skewed, so these totals illustrate the conversion; a procurement decision would use empirical quantiles.
+- Each per-SKU error sigma comes from 12 backtest residuals, so the stock totals are point estimates, not tight ones.
+- The backtest window covers the autumn ramp into the holidays, the hardest regime for a model that has never seen a December. In a stable season the ranking could narrow; with several years of history it could flip. That is the regime argument, and this dataset cannot settle it.
+- The pinned versions in requirements.txt are mandatory, not a suggestion; the code uses pandas 3.0 APIs.
 
 ## Run it
 

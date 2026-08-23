@@ -43,6 +43,8 @@ for sku, g in weekly.groupby("sku"):
     s = g.set_index("week")["units"].reindex(idx, fill_value=0)
     full.append(pd.DataFrame({"sku": sku, "week": idx, "units": s.values}))
 out = pd.concat(full, ignore_index=True)
+assert len(out) > 1000 and out["sku"].nunique() == TOP_N, \
+    "rebuild sanity check failed: source export may have changed"
 out.to_csv("data/weekly_demand.csv", index=False)
 print(f"wrote data/weekly_demand.csv: {out.sku.nunique()} skus x "
       f"{out.week.nunique()} weeks, {len(out)} rows")

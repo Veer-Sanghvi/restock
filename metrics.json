@@ -12,17 +12,17 @@
       "mae": 362.45659722222223
     },
     "lightgbm": {
-      "rmse": 747.9703228810619,
-      "mae": 393.21185324053295
+      "rmse": 683.1251229137483,
+      "mae": 405.67145487897454
     }
   },
   "safety_stock_units_at_95pct": {
     "naive_last_week": 24226,
     "moving_average_4wk": 19765,
-    "lightgbm": 22014
+    "lightgbm": 21602
   },
   "safety_stock_saved_vs_naive": {
     "moving_average_4wk": 4460,
-    "lightgbm": 2212
+    "lightgbm": 2624
   }
 }
