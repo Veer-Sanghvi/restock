@@ -22,11 +22,11 @@ The chart shows why. With one year of history, the model has never seen a holida
 
 ## Forecasts are inventory decisions
 
-Forecast error is not an abstract number; it sets the safety stock you must hold to hit a service level. At 95 percent service, safety stock per SKU is 1.645 times the forecast error sigma, and summed across the catalog the choice of forecast method becomes units on a shelf:
+Forecast error is not an abstract number; it sets the safety stock you must hold to hit a service level. The textbook shortcut multiplies each SKU's error sigma by 1.645, which assumes the errors are normal. Instead of assuming that, this repo measures it: standardize every backtest residual by its SKU's sigma, pool them, and take the empirical 95th percentile. The measured factors come out between 1.92 and 2.19, so the Gaussian shortcut under-covers the shelf by 20 to 33 percent here.
 
 ![Safety stock by method](figures/safety-stock.png)
 
-Switching from naive forecasting to the moving average frees 4,460 units of safety stock across 24 SKUs at the same service level. That is the sentence a plant manager cares about, and it comes from the forecast, not from the warehouse.
+Measured honestly, the ranking twists. The moving average wins the accuracy contest, but LightGBM needs the least stock on the shelf (25,253 units against the moving average's 26,337), because its misses have the best-behaved upper tail (factor 1.92 against 2.19) and the tail is what prices the shelf. The gap is about 4 percent, inside the noise of a 288-residual quantile, so the durable lesson is not "LightGBM secretly won." It is that average error and tail behavior are different questions, a stockroom pays for the second one, and either model choice frees 3,400 to 4,500 units against naive forecasting at the same service level.
 
 ## Decisions, and why
 
@@ -38,7 +38,7 @@ Switching from naive forecasting to the moving average frees 4,460 units of safe
 
 ## Stated limits
 
-- The safety-stock conversion assumes normally distributed forecast errors (the 1.645 factor). Retail demand errors are right-skewed, so these totals illustrate the conversion; a procurement decision would use empirical quantiles.
+- The Gaussian 1.645 factor is shown only as the textbook reference; the decision numbers use the measured 95th percentile of pooled standardized residuals (288 of them), which is honest but still a quantile from finite data.
 - Each per-SKU error sigma comes from 12 backtest residuals, so the stock totals are point estimates, not tight ones.
 - The backtest window covers the autumn ramp into the holidays, the hardest regime for a model that has never seen a December. In a stable season the ranking could narrow; with several years of history it could flip. That is the regime argument, and this dataset cannot settle it.
 - The pinned versions in requirements.txt are mandatory, not a suggestion; the code uses pandas 3.0 APIs.

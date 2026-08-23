@@ -16,13 +16,23 @@
       "mae": 405.67145487897454
     }
   },
-  "safety_stock_units_at_95pct": {
+  "safety_stock_units_at_95pct_gaussian": {
     "naive_last_week": 24226,
     "moving_average_4wk": 19765,
     "lightgbm": 21602
   },
-  "safety_stock_saved_vs_naive": {
-    "moving_average_4wk": 4460,
-    "lightgbm": 2624
+  "empirical_z95": {
+    "naive_last_week": 2.02,
+    "moving_average_4wk": 2.19,
+    "lightgbm": 1.92
+  },
+  "safety_stock_units_at_95pct_empirical": {
+    "naive_last_week": 29739,
+    "moving_average_4wk": 26337,
+    "lightgbm": 25253
+  },
+  "safety_stock_saved_vs_naive_empirical": {
+    "moving_average_4wk": 3402,
+    "lightgbm": 4487
   }
 }

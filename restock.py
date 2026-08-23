@@ -84,16 +84,34 @@ for name, col in MODELS.items():
     per_sku[name] = sig
 safety = {name: float(Z_95 * s.sum()) for name, s in per_sku.items()}
 
+# The 1.645 factor assumes normal errors. Test that instead of assuming it:
+# standardize each residual by its SKU's sigma, pool across the catalog,
+# and take the one-sided empirical 95th percentile. If errors were normal
+# this lands near 1.645; skew pushes it up and under-covers the shelf.
+z_emp = {}
+safety_emp = {}
+for name, col in MODELS.items():
+    sig_map = bt["sku"].map(per_sku[name])
+    standardized = (bt["units"] - bt[col]) / sig_map
+    z = float(np.quantile(standardized, 0.95))
+    z_emp[name] = z
+    safety_emp[name] = float(z * per_sku[name].sum())
+
 results = {
     "n_skus": int(df["sku"].nunique()),
     "backtest_weeks": BACKTEST_WEEKS,
     "one_step_ahead": True,
     "overall": overall,
-    "safety_stock_units_at_95pct": {k: round(v) for k, v in safety.items()},
-    "safety_stock_saved_vs_naive": {
-        "moving_average_4wk": round(safety["naive_last_week"]
-                                    - safety["moving_average_4wk"]),
-        "lightgbm": round(safety["naive_last_week"] - safety["lightgbm"]),
+    "safety_stock_units_at_95pct_gaussian": {k: round(v)
+                                             for k, v in safety.items()},
+    "empirical_z95": {k: round(v, 2) for k, v in z_emp.items()},
+    "safety_stock_units_at_95pct_empirical": {k: round(v)
+                                              for k, v in safety_emp.items()},
+    "safety_stock_saved_vs_naive_empirical": {
+        "moving_average_4wk": round(safety_emp["naive_last_week"]
+                                    - safety_emp["moving_average_4wk"]),
+        "lightgbm": round(safety_emp["naive_last_week"]
+                          - safety_emp["lightgbm"]),
     },
 }
 with open("metrics.json", "w") as f:
@@ -140,19 +158,28 @@ fig.autofmt_xdate()
 fig.tight_layout()
 fig.savefig("figures/backtest-top-sku.png", facecolor=DARK["bg"])
 
-# 2) the decision: safety stock required at 95 percent service
-fig, ax = plt.subplots(figsize=(6.6, 4.2), dpi=150, facecolor=DARK["bg"])
+# 2) the decision: safety stock at 95 percent service, gaussian vs empirical
+fig, ax = plt.subplots(figsize=(7.4, 4.4), dpi=150, facecolor=DARK["bg"])
 dark_ax(ax)
 names = ["naive_last_week", "moving_average_4wk", "lightgbm"]
 labels = ["naive\n(last week)", "4-week\nmoving average", "LightGBM"]
-vals = [safety[n] for n in names]
-colors = [DARK["muted"], DARK["link"], DARK["accent"]]
-bars = ax.bar(labels, vals, color=colors, alpha=0.9)
-for b, v in zip(bars, vals):
-    ax.text(b.get_x() + b.get_width() / 2, v + 12, f"{v:,.0f}",
-            ha="center", color=DARK["ink"], fontsize=11)
+x = np.arange(len(names))
+w = 0.38
+g_vals = [safety[n] for n in names]
+e_vals = [safety_emp[n] for n in names]
+ax.bar(x - w / 2, g_vals, w, color=DARK["muted"], alpha=0.85,
+       label="gaussian 1.645 factor (assumed)")
+ax.bar(x + w / 2, e_vals, w, color=DARK["accent"], alpha=0.9,
+       label="empirical 95th percentile (measured)")
+for xi, v in zip(x - w / 2, g_vals):
+    ax.text(xi, v + 250, f"{v:,.0f}", ha="center", color=DARK["muted"], fontsize=9)
+for xi, v in zip(x + w / 2, e_vals):
+    ax.text(xi, v + 250, f"{v:,.0f}", ha="center", color=DARK["ink"], fontsize=9)
+ax.set_xticks(x, labels)
 ax.set_ylabel(f"safety stock [units, {df.sku.nunique()} SKUs]")
-ax.set_title("Stock you must hold for 95% service, by forecast method")
+ax.set_ylim(0, 36500)
+ax.set_title("Stock for 95% service: the tail prices the shelf")
+dark_legend(ax)
 fig.tight_layout()
 fig.savefig("figures/safety-stock.png", facecolor=DARK["bg"])
 print("figures written")
