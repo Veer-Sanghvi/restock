@@ -1,0 +1,14 @@
+name: ci
+on: [push, pull_request]
+jobs:
+  run-pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: python restock.py
+      - name: metrics sanity
+        run: python -c "import json; m=json.load(open('metrics.json')); assert m['overall']['moving_average_4wk']['rmse'] < m['overall']['naive_last_week']['rmse']"
