@@ -119,21 +119,21 @@ with open("metrics.json", "w") as f:
 print(json.dumps(results, indent=2))
 
 # --------------------------------------------------------------- figures
-DARK = {"bg": "#0d1117", "surface": "#161b22", "ink": "#c9d1d9",
-        "muted": "#8b949e", "accent": "#39d353", "link": "#58a6ff",
-        "warn": "#d29922"}
+DARK = {"bg": "#0B0B0C", "surface": "#141415", "ink": "#FFFFFF",
+        "muted": "#A3A3A6", "border": "#2A2A2D", "accent": "#C6F432",
+        "link": "#6B6B70", "warn": "#d29922"}
 
 def dark_ax(ax):
     ax.set_facecolor(DARK["bg"])
     for s in ax.spines.values():
-        s.set_color(DARK["muted"])
+        s.set_color(DARK["border"])
     ax.tick_params(colors=DARK["muted"])
     ax.xaxis.label.set_color(DARK["ink"])
     ax.yaxis.label.set_color(DARK["ink"])
     ax.title.set_color(DARK["ink"])
 
 def dark_legend(ax):
-    leg = ax.legend(facecolor=DARK["surface"], edgecolor=DARK["muted"])
+    leg = ax.legend(facecolor=DARK["surface"], edgecolor=DARK["border"])
     for t in leg.get_texts():
         t.set_color(DARK["ink"])
 
